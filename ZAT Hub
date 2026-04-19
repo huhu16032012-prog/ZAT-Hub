@@ -1,0 +1,166 @@
+-- =============================================
+-- SCRIPT: ZAT - Blox Fruits Auto Farm
+-- By: Hung Dep Zai
+-- Phiên bản: 1.0 (Free)
+-- Hỗ trợ: Fluxus, Delta, Codex, Wave, Solara...
+-- =============================================
+
+local ZAT = {}
+ZAT.Name = "ZAT Auto Farm"
+ZAT.Author = "Hung Dep Zai"
+ZAT.Version = "1.0"
+
+print("✅ ZAT Auto Farm đã load thành công!")
+print("👑 By Hung Dep Zai - Farm dễ như ăn kẹo!")
+
+-- ================== CÀI ĐẶT ==================
+local Settings = {
+    AutoFarm = true,
+    AutoQuest = true,
+    AutoBuso = true,
+    AutoHaki = true,
+    FarmRadius = 200,           -- Bán kính farm
+    FarmMethod = "Above",       -- Above / Below / Behind
+    SelectedWeapon = "Melee",   -- Melee / Sword / Gun / Fruit
+    TweenSpeed = 250,           -- Tốc độ di chuyển (cao quá dễ lag)
+    AutoEatFruit = true,
+    Webhook = ""                -- Dán webhook discord vào đây nếu muốn
+}
+
+-- ================== LOAD LIBRARY ==================
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- Anti-AFK
+LocalPlayer.Idled:connect(function()
+    game:GetService("VirtualUser"):Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    wait(1)
+    game:GetService("VirtualUser"):Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+end)
+
+-- ================== HÀM CHÍNH ==================
+function GetQuest()
+    if not Settings.AutoQuest then return end
+    local level = LocalPlayer.Data.Level.Value
+    -- Tự động nhận quest phù hợp level
+    for _, v in pairs(Workspace.NPCs:GetChildren()) do
+        if v.Name:find("Quest") or v:FindFirstChild("Quest") then
+            local dist = (v.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            if dist < 30 then
+                game:GetService("ReplicatedStorage").Remotes.CommF_:InvokeServer("StartQuest", v.Name, 1)
+                print("📜 Nhận quest từ " .. v.Name)
+                break
+            end
+        end
+    end
+end
+
+function FarmMob()
+    if not Settings.AutoFarm then return end
+    
+    local mobs = {}
+    for _, v in pairs(Workspace.Enemies:GetChildren()) do
+        if v:FindFirstChild("Humanoid") and v.Humanoid.Health > 0 and 
+           (v.Name:find("Bandit") or v.Name:find("Pirate") or v.Name:find("Marine") or v.Name:find("Fishman") or true) then
+            table.insert(mobs, v)
+        end
+    end
+    
+    if #mobs > 0 then
+        local closest = mobs[1]
+        for _, mob in pairs(mobs) do
+            local dist1 = (mob.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            local dist2 = (closest.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+            if dist1 < dist2 then closest = mob end
+        end
+        
+        -- Di chuyển + farm
+        local root = LocalPlayer.Character.HumanoidRootPart
+        local targetPos = closest.HumanoidRootPart.Position
+        
+        if Settings.FarmMethod == "Above" then
+            targetPos = targetPos + Vector3.new(0, Settings.FarmRadius/2, 0)
+        elseif Settings.FarmMethod == "Below" then
+            targetPos = targetPos - Vector3.new(0, 10, 0)
+        end
+        
+        local tween = TweenService:Create(root, TweenInfo.new(
+            (root.Position - targetPos).Magnitude / Settings.TweenSpeed, 
+            Enum.EasingStyle.Linear
+        ), {CFrame = CFrame.new(targetPos)})
+        tween:Play()
+        wait(0.1)
+        
+        -- Attack
+        if LocalPlayer.Character:FindFirstChildOfClass("Tool") then
+            LocalPlayer.Character:FindFirstChildOfClass("Tool"):Activate()
+        end
+    end
+end
+
+-- Auto Buso + Haki
+spawn(function()
+    while wait(5) do
+        if Settings.AutoBuso then
+            pcall(function()
+                ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+            end)
+        end
+        if Settings.AutoHaki then
+            pcall(function()
+                ReplicatedStorage.Remotes.CommE:FireServer("Haki")
+            end)
+        end
+    end
+end)
+
+-- ================== MAIN LOOP ==================
+spawn(function()
+    while wait(0.3) do
+        pcall(function()
+            if Settings.AutoFarm then
+                GetQuest()
+                FarmMob()
+            end
+        end)
+    end
+end)
+
+-- ================== GUI ĐƠN GIẢN ==================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ZAT_GUI"
+ScreenGui.Parent = game.CoreGui
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 300, 0, 200)
+Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+Frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Frame.BorderSizePixel = 0
+Frame.Parent = ScreenGui
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+Title.Text = "ZAT Auto Farm - By Hung Dep Zai"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextScaled = true
+Title.Parent = Frame
+
+local Toggle = Instance.new("TextButton")
+Toggle.Size = UDim2.new(0.9, 0, 0, 50)
+Toggle.Position = UDim2.new(0.05, 0, 0.3, 0)
+Toggle.BackgroundColor3 = Color3.fromRGB(0, 255, 100)
+Toggle.Text = "ON / OFF Auto Farm"
+Toggle.TextScaled = true
+Toggle.Parent = Frame
+
+Toggle.MouseButton1Click:Connect(function()
+    Settings.AutoFarm = not Settings.AutoFarm
+    Toggle.BackgroundColor3 = Settings.AutoFarm and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 50, 50)
+    print("ZAT Auto Farm: " .. (Settings.AutoFarm and "BẬT" or "TẮT"))
+end)
+
+print("🎮 Nhấn nút trong GUI để bật/tắt!")
