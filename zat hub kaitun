@@ -1,0 +1,228 @@
+-- =============================================
+-- ZAT KAITUN HUB v3.0
+-- By: Hung Dep Zai
+-- "Kaitun Style" - Full Hub, Siêu mượt, 1 không 2
+-- =============================================
+
+print("✅ ZAT Kaitun Hub Loaded!")
+print("👑 By Hung Dep Zai - Kaitun Style Premium")
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+-- ================== SETTINGS ==================
+local Settings = {
+    AutoFarm = true,
+    AutoQuest = true,
+    AutoBuso = true,
+    AutoHaki = true,
+    AutoSkill = true,
+    AutoEatFruit = true,
+    AutoSword = false,
+    FarmMethod = "Above", -- Above, Below, Behind
+    FarmDistance = 25,
+    TweenSpeed = 250,
+    SelectedWeapon = "Melee",
+    KillAura = true,
+    AutoNextSea = false
+}
+
+-- ================== TẠO GUI KAITUN STYLE ==================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ZAT_Kaitun_Hub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game:GetGuiService() or game.CoreGui
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 480, 0, 580)
+MainFrame.Position = UDim2.new(0.5, -240, 0.5, -290)
+MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 16)
+UICorner.Parent = MainFrame
+
+-- Title
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 60)
+Title.BackgroundColor3 = Color3.fromRGB(0, 110, 255)
+Title.Text = "ZAT KAITUN HUB"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 16)
+TitleCorner.Parent = Title
+
+local Author = Instance.new("TextLabel")
+Author.Size = UDim2.new(1, 0, 0, 20)
+Author.Position = UDim2.new(0, 0, 0, 60)
+Author.BackgroundTransparency = 1
+Author.Text = "By Hung Dep Zai • Kaitun Style • v3.0"
+Author.TextColor3 = Color3.fromRGB(120, 220, 255)
+Author.TextSize = 14
+Author.Font = Enum.Font.Gotham
+Author.Parent = MainFrame
+
+-- Tab Buttons
+local TabHolder = Instance.new("Frame")
+TabHolder.Size = UDim2.new(1, -20, 0, 40)
+TabHolder.Position = UDim2.new(0, 10, 0, 85)
+TabHolder.BackgroundTransparency = 1
+TabHolder.Parent = MainFrame
+
+local Tabs = {"Farm", "Combat", "Teleport", "Misc"}
+local TabButtons = {}
+
+for i, tabName in ipairs(Tabs) do
+    local TabBtn = Instance.new("TextButton")
+    TabBtn.Size = UDim2.new(0.24, 0, 1, 0)
+    TabBtn.Position = UDim2.new((i-1)*0.25, 0, 0, 0)
+    TabBtn.BackgroundColor3 = i == 1 and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(40, 40, 50)
+    TabBtn.Text = tabName
+    TabBtn.TextColor3 = Color3.new(1,1,1)
+    TabBtn.Font = Enum.Font.GothamSemibold
+    TabBtn.Parent = TabHolder
+    
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 10)
+    BtnCorner.Parent = TabBtn
+    
+    TabBtn.MouseButton1Click:Connect(function()
+        for _, btn in pairs(TabButtons) do btn.BackgroundColor3 = Color3.fromRGB(40,40,50) end
+        TabBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        -- Switch tab content (simple version)
+        print("Đã chuyển sang tab: " .. tabName)
+    end)
+    
+    table.insert(TabButtons, TabBtn)
+end
+
+-- Content Area
+local Content = Instance.new("ScrollingFrame")
+Content.Size = UDim2.new(1, -20, 1, -150)
+Content.Position = UDim2.new(0, 10, 0, 135)
+Content.BackgroundTransparency = 1
+Content.ScrollBarThickness = 8
+Content.Parent = MainFrame
+
+-- ================== FARM TAB ==================
+local function AddToggle(y, text, setting)
+    local Toggle = Instance.new("Frame")
+    Toggle.Size = UDim2.new(1, 0, 0, 50)
+    Toggle.Position = UDim2.new(0, 0, 0, y)
+    Toggle.BackgroundColor3 = Color3.fromRGB(30, 30, 38)
+    Toggle.Parent = Content
+    
+    local TC = Instance.new("UICorner")
+    TC.CornerRadius = UDim.new(0, 12)
+    TC.Parent = Toggle
+    
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.65, 0, 1, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = "   " .. text
+    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.GothamSemibold
+    Label.TextSize = 16
+    Label.Parent = Toggle
+    
+    local Switch = Instance.new("TextButton")
+    Switch.Size = UDim2.new(0, 90, 0, 32)
+    Switch.Position = UDim2.new(0.78, 0, 0.5, -16)
+    Switch.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(255, 70, 70)
+    Switch.Text = Settings[setting] and "ON" or "OFF"
+    Switch.TextColor3 = Color3.new(1,1,1)
+    Switch.Font = Enum.Font.GothamBold
+    Switch.Parent = Toggle
+    
+    local SC = Instance.new("UICorner")
+    SC.CornerRadius = UDim.new(0, 999)
+    SC.Parent = Switch
+    
+    Switch.MouseButton1Click:Connect(function()
+        Settings[setting] = not Settings[setting]
+        Switch.BackgroundColor3 = Settings[setting] and Color3.fromRGB(0, 255, 120) or Color3.fromRGB(255, 70, 70)
+        Switch.Text = Settings[setting] and "ON" or "OFF"
+    end)
+end
+
+AddToggle(10, "Auto Farm", "AutoFarm")
+AddToggle(70, "Auto Quest", "AutoQuest")
+AddToggle(130, "Auto Buso", "AutoBuso")
+AddToggle(190, "Auto Haki", "AutoHaki")
+AddToggle(250, "Auto Skill Z", "AutoSkill")
+AddToggle(310, "Auto Ăn Trái", "AutoEatFruit")
+AddToggle(370, "Kill Aura", "KillAura")
+AddToggle(430, "Auto Next Sea", "AutoNextSea")
+
+-- ================== MAIN FARM LOOP (Kaitun Style) ==================
+spawn(function()
+    while wait(0.15) do
+        pcall(function()
+            if not Settings.AutoFarm then return end
+            
+            -- Auto Quest
+            if Settings.AutoQuest then
+                -- Quest logic (có thể mở rộng)
+            end
+            
+            -- Farm enemies
+            for _, enemy in pairs(Workspace.Enemies:GetChildren()) do
+                if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 and 
+                   (enemy:FindFirstChild("HumanoidRootPart")) then
+                    
+                    local Root = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if Root then
+                        local TargetPos = enemy.HumanoidRootPart.Position
+                        
+                        if Settings.FarmMethod == "Above" then
+                            TargetPos = TargetPos + Vector3.new(0, Settings.FarmDistance, 0)
+                        end
+                        
+                        Root.CFrame = CFrame.new(TargetPos)
+                        
+                        -- Attack
+                        local Tool = LocalPlayer.Character:FindFirstChildOfClass("Tool")
+                        if Tool then
+                            Tool:Activate()
+                        end
+                        
+                        -- Auto Skill
+                        if Settings.AutoSkill then
+                            game:GetService("VirtualInputManager"):SendKeyEvent(true, "Z", false, game)
+                            wait(0.1)
+                            game:GetService("VirtualInputManager"):SendKeyEvent(false, "Z", false, game)
+                        end
+                        
+                        break
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+-- Auto Buso + Haki
+spawn(function()
+    while wait(3) do
+        if Settings.AutoBuso then
+            ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+        end
+        if Settings.AutoHaki then
+            ReplicatedStorage.Remotes.CommE:FireServer("Haki")
+        end
+    end
+end)
+
+print("🎮 ZAT Kaitun Hub đã mở!")
+print("💎 Sử dụng thoải mái, farm siêu nhanh!")
