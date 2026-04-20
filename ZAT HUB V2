@@ -1,0 +1,195 @@
+-- =============================================
+-- ZAT PREMIUM GUI v2.0
+-- By: Hung Dep Zai
+-- "1 không 2" - GUI đẹp nhất Blox Fruits 🔥
+-- =============================================
+
+local ZAT = {}
+ZAT.Name = "ZAT Auto Farm"
+ZAT.Author = "Hung Dep Zai"
+
+print("✅ ZAT Premium GUI Loaded!")
+print("👑 By Hung Dep Zai - GUI 1 không 2!")
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- ================== SETTINGS ==================
+local Settings = {
+    AutoFarm = true,
+    AutoQuest = true,
+    AutoBuso = true,
+    AutoHaki = true,
+    AutoEatFruit = true,
+    FarmRadius = 150,
+    TweenSpeed = 280,
+    FarmMethod = "Above",
+    SelectedWeapon = "Melee",
+    AutoSkill = true
+}
+
+-- ================== TẠO GUI ĐẸP ==================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ZAT_Premium_GUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = game.CoreGui
+
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 420, 0, 520)
+MainFrame.Position = UDim2.new(0.5, -210, 0.5, -260)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.ClipsDescendants = true
+MainFrame.Parent = ScreenGui
+
+-- Corner
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 50)
+TitleBar.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+TitleBar.BorderSizePixel = 0
+TitleBar.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = TitleBar
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 1, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "ZAT AUTO FARM"
+Title.TextColor3 = Color3.new(1,1,1)
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+Title.Parent = TitleBar
+
+local Author = Instance.new("TextLabel")
+Author.Size = UDim2.new(1, 0, 0, 20)
+Author.Position = UDim2.new(0, 0, 0, 50)
+Author.BackgroundTransparency = 1
+Author.Text = "By Hung Dep Zai • GUI 1 không 2"
+Author.TextColor3 = Color3.fromRGB(180, 180, 180)
+Author.TextSize = 14
+Author.Font = Enum.Font.Gotham
+Author.Parent = MainFrame
+
+-- Tab System
+local TabFrame = Instance.new("Frame")
+TabFrame.Size = UDim2.new(1, -20, 1, -90)
+TabFrame.Position = UDim2.new(0, 10, 0, 80)
+TabFrame.BackgroundTransparency = 1
+TabFrame.Parent = MainFrame
+
+-- Tabs
+local Tabs = {
+    {name = "Farm", color = Color3.fromRGB(0, 255, 100)},
+    {name = "Combat", color = Color3.fromRGB(255, 100, 100)},
+    {name = "Misc", color = Color3.fromRGB(100, 200, 255)}
+}
+
+local CurrentTab = "Farm"
+
+-- Tạo Toggle Button đẹp
+local function CreateToggle(parent, text, settingName, yPos)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(1, 0, 0, 50)
+    ToggleFrame.Position = UDim2.new(0, 0, 0, yPos)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+    ToggleFrame.Parent = parent
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 10)
+    ToggleCorner.Parent = ToggleFrame
+    
+    local Label = Instance.new("TextLabel")
+    Label.Size = UDim2.new(0.7, 0, 1, 0)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.new(1,1,1)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.TextSize = 16
+    Label.Font = Enum.Font.GothamSemibold
+    Label.Parent = ToggleFrame
+    
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 80, 0, 30)
+    ToggleButton.Position = UDim2.new(0.85, 0, 0.5, -15)
+    ToggleButton.BackgroundColor3 = Settings[settingName] and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 60, 60)
+    ToggleButton.Text = Settings[settingName] and "ON" or "OFF"
+    ToggleButton.TextColor3 = Color3.new(1,1,1)
+    ToggleButton.Font = Enum.Font.GothamBold
+    ToggleButton.Parent = ToggleFrame
+    
+    local ToggleBtnCorner = Instance.new("UICorner")
+    ToggleBtnCorner.CornerRadius = UDim.new(0, 8)
+    ToggleBtnCorner.Parent = ToggleButton
+    
+    ToggleButton.MouseButton1Click:Connect(function()
+        Settings[settingName] = not Settings[settingName]
+        ToggleButton.BackgroundColor3 = Settings[settingName] and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 60, 60)
+        ToggleButton.Text = Settings[settingName] and "ON" or "OFF"
+    end)
+    
+    return ToggleFrame
+end
+
+-- ================== TAB FARM ==================
+local FarmTab = Instance.new("ScrollingFrame")
+FarmTab.Size = UDim2.new(1, 0, 1, 0)
+FarmTab.BackgroundTransparency = 1
+FarmTab.ScrollBarThickness = 6
+FarmTab.Parent = TabFrame
+
+CreateToggle(FarmTab, "Auto Farm", "AutoFarm", 10)
+CreateToggle(FarmTab, "Auto Quest", "AutoQuest", 70)
+CreateToggle(FarmTab, "Auto Buso", "AutoBuso", 130)
+CreateToggle(FarmTab, "Auto Haki", "AutoHaki", 190)
+CreateToggle(FarmTab, "Auto Ăn Trái", "AutoEatFruit", 250)
+CreateToggle(FarmTab, "Auto Skill", "AutoSkill", 310)
+
+-- ================== MAIN LOOP ==================
+spawn(function()
+    while wait(0.25) do
+        pcall(function()
+            if Settings.AutoFarm then
+                -- Farm logic (giữ nguyên code farm cũ)
+                for _, enemy in pairs(Workspace.Enemies:GetChildren()) do
+                    if enemy:FindFirstChild("Humanoid") and enemy.Humanoid.Health > 0 then
+                        local root = LocalPlayer.Character.HumanoidRootPart
+                        local target = enemy.HumanoidRootPart.Position + Vector3.new(0, Settings.FarmRadius/2, 0)
+                        
+                        root.CFrame = CFrame.new(target)
+                        
+                        if LocalPlayer.Character:FindFirstChildOfClass("Tool") then
+                            LocalPlayer.Character:FindFirstChildOfClass("Tool"):Activate()
+                        end
+                        break
+                    end
+                end
+            end
+        end)
+    end
+end)
+
+-- Auto Buso & Haki
+spawn(function()
+    while wait(4) do
+        if Settings.AutoBuso then
+            ReplicatedStorage.Remotes.CommF_:InvokeServer("Buso")
+        end
+        if Settings.AutoHaki then
+            ReplicatedStorage.Remotes.CommE:FireServer("Haki")
+        end
+    end
+end)
+
+print("🎮 GUI đã mở! Nhấn nút để bật/tắt các chức năng.")
+print("💎 ZAT by Hung Dep Zai - GUI đẹp nhất server!")
